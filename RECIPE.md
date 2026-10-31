@@ -31,6 +31,12 @@ popup with reset times, pace and options.
 ## How it behaves
 
 - Reads every 2 minutes, at start, and on Refresh or the `quota:refresh` key command.
+- Follows the selected space's machine (`spaces().find(s => s.active).machine`, null locally).
+  Both `quota-axi` and its login-shell fallback pass `{ on: machine }` to `exec`. Switching
+  machines reads immediately. Results, errors and pending requests are isolated by machine;
+  late replies never replace the newly selected machine's data. Never fall back to local execution.
+- The popup shows the machine name and pins that machine in its props. Its Refresh runs there
+  even after the selected space changes. Each remote needs its own `quota-axi` and CLI sign-ins.
 - Data older than 10 minutes fades the strip to 60% opacity.
 - A small ▲ (8 px, level color) follows the percent when usage is at least 20% and 10 points
   ahead of pace. The popup says "on pace" within 5 points.
@@ -45,12 +51,12 @@ popup with reset times, pace and options.
 ## Built from
 
 - One mod, `mods/quota`, `mod.json` `{ "place": "none" }`. The same mod draws the popup when
-  `props().menu` is set (`openOverlay({ mod: "quota", kind: "popup", width: 300, props: { menu: true, start } })`).
+  `props().menu` is set (`openOverlay({ mod: "quota", kind: "popup", width: 300, props: { menu: true, machine, start } })`).
 - Layout: the status block becomes a row: `workspace-status` (weight 1) and `quota` (px 360),
   `resizable: false`.
-- `herdr` API: `exec`, `theme`, `settings().dark`, `shared` / `setShared` (`quota.data`,
-  `quota.error`, `quota.options`, `quota.refresh`), `props`, `openOverlay`, `knownAgents`
-  (icons), `nextCommand`; elements `svg`, `image`, `.tooltip`.
+- `herdr` API: `spaces`, `exec`, `theme`, `settings().dark`, `shared` / `setShared`
+  (`quota.data:<JSON machine>`, `quota.error:<JSON machine>`, global `quota.options`), `props`,
+  `openOverlay`, `knownAgents` (icons), `nextCommand`; elements `svg`, `image`, `.tooltip`.
 - Program: `quota-axi --json` (schema 3: `providers[].provider/label/plan/windows[]` with
   `kind` session, weekly, monthly or model, `percentUsed`, `resetsAt`, `windowSeconds`).
 

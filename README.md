@@ -77,8 +77,20 @@ Keys: bind `quota:menu` (open the popup) and `quota:refresh` (read now) in `keys
 
 The mod runs `quota-axi --json` every 2 minutes, and when you click Refresh. If Herdr cannot find
 it on its own `PATH` (common when Herdr starts from the Dock), it asks your login shell
-(`$SHELL -lic`). The mod itself makes no network requests and stores no tokens; `quota-axi` reads
-your local Claude, Codex and other CLI sign-ins to ask each provider for your usage.
+(`$SHELL -lic`). Both commands run on the selected space's machine. The mod itself makes no
+network requests and stores no tokens; `quota-axi` reads that machine's Claude, Codex and other
+CLI sign-ins to ask each provider for your usage.
+
+## Remote machines
+
+The status bar follows the selected space's machine. Install `quota-axi` on each remote machine
+(`npm install -g quota-axi`) and sign into your providers there. Credentials stay on that machine.
+The popup identifies the machine and stays on it until closed, including when you click Refresh.
+
+Results and errors are cached separately per machine. Switching machines fetches immediately;
+an unreachable remote or missing dependency shows an error instead of using your local account.
+Options are shared across machines. Sessions using a custom `CODEX_HOME` are not detected:
+the report uses the CLI environment of the machine's Herdr core.
 
 ## System load (optional second mod)
 

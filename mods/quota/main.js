@@ -2,7 +2,7 @@
 // Click it for details and options. The same mod draws the popup (props().menu).
 import { View, div, svg, image } from "gpui-kit";
 import { h_flex, v_flex } from "gpui-base";
-import { exec, theme, settings, shared, setShared, props, openOverlay, knownAgents, nextCommand } from "herdr";
+import { exec, theme, settings, shared, setShared, props, openOverlay, knownAgents, nextCommand, spaces } from "herdr";
 
 const EVERY = 120000, STALE = 10 * 60000;
 const DEFAULTS = { kinds: { session: true, weekly: true, monthly: true, model: false }, hidden: [], signedOut: false, names: false };
@@ -17,6 +17,8 @@ function options() {
 }
 const setOptions = change => setShared("quota.options", { ...options(), ...change });
 const signedIn = p => p.windows.length > 0;
+const quotaMachine = () => props()?.menu ? props().machine ?? null : spaces().find(s => s.active)?.machine ?? null;
+const stateKey = (name, on = quotaMachine()) => `${name}:${JSON.stringify(on)}`;
 
 // Calm until it matters: green, amber from 60%, orange from 80%, red from 92%.
 function level(pct) {
@@ -67,10 +69,10 @@ function bar(w, width, height, now, t) {
     .when(e !== null, el => el.child(div().absolute().top(-2).h(height + 4).w(1).left(Math.round(width * e)).bg(t.foreground).opacity(0.45)));
 }
 
-async function load() {
-  let r = await exec("quota-axi", ["--json"]).catch(e => ({ code: -1, stderr: String(e) }));
+async function load(on = null) {
+  let r = await exec("quota-axi", ["--json"], { on }).catch(e => ({ code: -1, stderr: String(e) }));
   // Apps started from the Dock miss PATH entries set in the shell's rc file (npm, nvm, mise): ask the person's own shell.
-  if (r.code !== 0) r = await exec("sh", ["-c", 'exec "${SHELL:-/bin/sh}" -lic "quota-axi --json" </dev/null']).catch(e => ({ code: -1, stderr: String(e) }));
+  if (r.code !== 0) r = await exec("sh", ["-c", 'exec "${SHELL:-/bin/sh}" -lic "quota-axi --json" </dev/null'], { on }).catch(e => ({ code: -1, stderr: String(e) }));
   if (r.code !== 0) throw new Error(`quota-axi failed: ${(r.stderr || "").trim().split("\n").pop() || `exit ${r.code}`}`);
   // An interactive shell can print a banner first; the report starts at the first brace.
   const data = JSON.parse(r.stdout.slice(r.stdout.indexOf("{")));
@@ -88,13 +90,14 @@ export default class Quota extends View {
   init(_props, cx) {
     // The app's program table knows each agent's icon and whether it is a one-color glyph.
     this.programs = {};
+    this.loading = new Set();
     cx.spawn(async cx => {
       const list = await knownAgents().catch(() => []);
       for (const a of list) this.programs[a.key] = a;
       cx.notify();
     });
     if (props()?.menu) return;
-    this.asked = shared("quota.refresh") ?? 0;
+    this.machine = quotaMachine();
     this.refresh(cx);
     cx.timer.every(EVERY, cx => this.refresh(cx));
     // Key commands: "quota:menu" opens the popup, "quota:refresh" reads the quota now.
@@ -117,29 +120,30 @@ export default class Quota extends View {
   }
 
   refresh(cx) {
-    if (this.loading) return;
-    this.loading = true;
+    const on = quotaMachine();
+    if (this.loading.has(on)) return;
+    this.loading.add(on);
     cx.spawn(async cx => {
-      try { setShared("quota.data", await load()); setShared("quota.error", null); }
-      catch (e) { setShared("quota.error", String(e.message ?? e)); }
-      finally { this.loading = false; cx.notify(); }
+      try { setShared(stateKey("quota.data", on), await load(on)); setShared(stateKey("quota.error", on), null); }
+      catch (e) { setShared(stateKey("quota.error", on), String(e.message ?? e)); }
+      finally { this.loading.delete(on); cx.notify(); }
     });
   }
 
   openMenu() {
-    const data = shared("quota.data"), o = options();
+    const data = shared(stateKey("quota.data")), o = options();
     const all = data?.providers ?? [], shown = all.filter(p => !o.hidden.includes(p.id) && (signedIn(p) || o.signedOut));
     const details = shown.reduce((n, p) => n + 30 + p.windows.length * 42, 0);
     const toggles = (KINDS.length + all.length + 2) * 28;
-    openOverlay({ mod: "quota", kind: "popup", width: 300, height: Math.min(720, 44 + details + 40 + toggles + 12), props: { menu: true, start: props() ?? {} } });
+    openOverlay({ mod: "quota", kind: "popup", width: 300, height: Math.min(720, 44 + details + 40 + toggles + 36), props: { menu: true, machine: quotaMachine(), start: props() ?? {} } });
   }
 
   render(cx) {
     const t = theme();
     if (props()?.menu) return this.menu(t);
-    const ask = shared("quota.refresh") ?? 0;
-    if (ask !== this.asked) { this.asked = ask; this.refresh(cx); }
-    const data = shared("quota.data"), error = shared("quota.error"), o = options(), now = Date.now();
+    const on = quotaMachine();
+    if (on !== this.machine) { this.machine = on; this.refresh(cx); }
+    const data = shared(stateKey("quota.data")), error = shared(stateKey("quota.error")), o = options(), now = Date.now();
     const stale = !data || now - data.at > STALE;
     const list = (data?.providers ?? []).filter(p => !o.hidden.includes(p.id) && (signedIn(p) || o.signedOut));
     const parts = [];
@@ -163,6 +167,7 @@ export default class Quota extends View {
     });
     return h_flex().id("quota").size_full().px(12).gap(11).items_center().justify_end().overflow_hidden()
       .bg(t.chrome).border_t(1).border_color(t.border).text_size(11.5).text_color(t.muted).cursor_pointer()
+      .tooltip(`Quota on ${on ?? "this computer"}`)
       .when(stale, el => el.opacity(0.6))
       .on_click(() => this.openMenu())
       .on_mouse_down("right", () => this.openMenu())
@@ -171,7 +176,7 @@ export default class Quota extends View {
   }
 
   menu(t) {
-    const data = shared("quota.data"), error = shared("quota.error"), o = options(), now = Date.now();
+    const data = shared(stateKey("quota.data")), error = shared(stateKey("quota.error")), o = options(), now = Date.now();
     const all = data?.providers ?? [];
     const toggle = (label, on, act, id) => h_flex().id(id).h(28).px(8).gap(9).rounded(6).items_center().cursor_pointer()
       .hover(s => s.bg(t.hover)).on_click(act)
@@ -200,7 +205,8 @@ export default class Quota extends View {
       .child(h_flex().px(8).pt(4).pb(2).items_center()
         .child(div().flex_1().text_size(11).text_color(t.dim).child(data ? `Agent quota · updated ${ago(data.at, now)}` : "Agent quota"))
         .child(div().id("quota-refresh").px(6).rounded(5).cursor_pointer().text_size(11).text_color(t.muted).hover(s => s.bg(t.hover))
-          .on_click(() => setShared("quota.refresh", Date.now())).child("Refresh")))
+          .on_click((_event, cx) => this.refresh(cx)).child("Refresh")))
+      .child(div().px(8).py(4).text_size(11).text_color(t.muted).child(`Machine: ${quotaMachine() ?? "This computer"}`))
       .when(Boolean(error), el => el.child(div().px(8).py(4).text_size(11).text_color(level(95)).child(error)))
       .children(details)
       .child(div().mx(8).my(6).h(1).bg(t.border))
