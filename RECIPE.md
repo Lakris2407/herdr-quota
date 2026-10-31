@@ -24,9 +24,12 @@ popup with reset times, pace and options.
 - **Popup** (300 px wide, `popover`): "Agent quota · updated Nm ago" and a Refresh link; per
   provider its icon, name in semibold and plan in `dim`; per limit a 62 px label ("5 hours",
   "Week", or the limit's label), a 120×5 px bar, the percent, and below it "resets in 2h 52m ·
-  39% under pace". A divider, then "Show in the status bar" with checkboxes (14 px, filled with
-  the green level color when on): 5-hour limit, Weekly limit, Monthly limit, Model limits, one
-  per provider, Signed-out providers, Provider names.
+  39% under pace". A divider, then "Limits to show in the status bar" with 32 px menu rows:
+  labels on the left (`foreground` when selected, `muted` otherwise), a 16 px Lucide check
+  in `accent` on the right when selected, and a hover background. Options: 5-hour limit,
+  Weekly limit, Monthly limit, Model limits, then a 1 px `border` divider with 6 px vertical
+  margins and a "Models to track" heading before the provider list, Signed-out providers
+  and Provider names.
 
 ## How it behaves
 

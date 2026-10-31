@@ -130,8 +130,8 @@ export default class Quota extends View {
     const data = shared("quota.data"), o = options();
     const all = data?.providers ?? [], shown = all.filter(p => !o.hidden.includes(p.id) && (signedIn(p) || o.signedOut));
     const details = shown.reduce((n, p) => n + 30 + p.windows.length * 42, 0);
-    const toggles = (KINDS.length + all.length + 2) * 28;
-    openOverlay({ mod: "quota", kind: "popup", width: 300, height: Math.min(720, 44 + details + 40 + toggles + 12), props: { menu: true, start: props() ?? {} } });
+    const toggles = (KINDS.length + all.length + 2) * 32;
+    openOverlay({ mod: "quota", kind: "popup", width: 300, height: Math.min(720, 44 + details + 40 + toggles + 53), props: { menu: true, start: props() ?? {} } });
   }
 
   render(cx) {
@@ -166,18 +166,18 @@ export default class Quota extends View {
       .when(stale, el => el.opacity(0.6))
       .on_click(() => this.openMenu())
       .on_mouse_down("right", () => this.openMenu())
-      .when(parts.length === 0, el => el.child(div().text_color(t.dim).child(error ? "Quota unavailable" : data ? "No quota to show" : "Quota…")))
+      .when(parts.length === 0, el => el.child(div().text_color(t.dim).child(error ? "Quota unavailable" : data ? "No quota to show" : "Loading quota…")))
       .children(parts);
   }
 
   menu(t) {
     const data = shared("quota.data"), error = shared("quota.error"), o = options(), now = Date.now();
     const all = data?.providers ?? [];
-    const toggle = (label, on, act, id) => h_flex().id(id).h(28).px(8).gap(9).rounded(6).items_center().cursor_pointer()
+    const toggle = (label, on, act, id) => h_flex().id(id).h(32).px(10).gap(10).rounded(6).items_center().cursor_pointer()
       .hover(s => s.bg(t.hover)).on_click(act)
-      .child(div().size(14).flex_none().rounded(4).border_1().border_color(on ? level(0) : t.input).bg(on ? level(0) : t.popover)
-        .when(on, el => el.child(div().size_full().flex().items_center().justify_center().text_size(10).text_color(t.popover).child("✓"))))
-      .child(div().flex_1().text_color(t.foreground).child(label));
+      .child(div().flex_1().text_color(on ? t.foreground : t.muted).child(label))
+      .child(div().size(16).flex_none().flex().items_center().justify_center()
+        .when(on, el => el.child(svg("mods/quota/check.svg").size(16).text_color(t.accent))));
     const heading = text => div().px(8).pt(10).pb(4).text_size(10.5).text_color(t.dim).child(text);
     const details = all.filter(p => !o.hidden.includes(p.id) && (signedIn(p) || o.signedOut)).map(p => v_flex().px(8).py(4).gap(4)
       .child(h_flex().gap(6).items_center()
@@ -204,8 +204,10 @@ export default class Quota extends View {
       .when(Boolean(error), el => el.child(div().px(8).py(4).text_size(11).text_color(level(95)).child(error)))
       .children(details)
       .child(div().mx(8).my(6).h(1).bg(t.border))
-      .child(heading("Show in the status bar"))
+      .child(heading("Limits to show in the status bar"))
       .children(KINDS.map(([kind, label]) => toggle(label, o.kinds[kind], () => setOptions({ kinds: { ...o.kinds, [kind]: !o.kinds[kind] } }), `kind-${kind}`)))
+      .child(div().mx(8).my(6).h(1).bg(t.border))
+      .child(heading("Models to track"))
       .children(all.map(p => toggle(p.label, !o.hidden.includes(p.id),
         () => setOptions({ hidden: o.hidden.includes(p.id) ? o.hidden.filter(x => x !== p.id) : [...o.hidden, p.id] }), `prov-${p.id}`)))
       .child(toggle("Signed-out providers", o.signedOut, () => setOptions({ signedOut: !o.signedOut }), "signed-out"))
