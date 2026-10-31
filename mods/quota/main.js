@@ -78,8 +78,13 @@ async function load() {
     at: Date.now(),
     providers: (data.providers ?? []).map(p => ({
       id: p.provider, label: p.label ?? p.provider, plan: p.plan ?? null, status: p.state?.status ?? null,
-      windows: (p.windows ?? []).filter(w => typeof w.percentUsed === "number")
-        .map(w => ({ id: w.id, label: w.label, kind: w.kind, percentUsed: w.percentUsed, resetsAt: w.resetsAt ?? null, windowSeconds: w.windowSeconds ?? null })),
+      windows: (p.windows ?? []).map(w => ({
+        id: w.id, label: w.label, kind: w.kind,
+        // Newer quota-axi reports remaining percentages; shares are not independent allowances.
+        percentUsed: Number.isFinite(w.percentUsed) ? w.percentUsed
+          : w.shareOf == null && Number.isFinite(w.percentRemaining) ? 100 - w.percentRemaining : null,
+        resetsAt: w.resetsAt ?? null, windowSeconds: w.windowSeconds ?? null,
+      })).filter(w => Number.isFinite(w.percentUsed)),
     })),
   };
 }
