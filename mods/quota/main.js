@@ -2,6 +2,7 @@
 // Click it for details and options. The same mod draws the popup (props().menu).
 import { View, div, svg, image } from "gpui-kit";
 import { h_flex, v_flex } from "gpui-base";
+import { runQuotaCommand } from "./quota-command.js";
 import { exec, theme, settings, shared, setShared, props, openOverlay, knownAgents, nextCommand } from "herdr";
 
 const EVERY = 120000, STALE = 10 * 60000;
@@ -68,7 +69,7 @@ function bar(w, width, height, now, t) {
 }
 
 async function load() {
-  let r = await exec("quota-axi", ["--json"]).catch(e => ({ code: -1, stderr: String(e) }));
+  let r = await runQuotaCommand(exec).catch(e => ({ code: -1, stderr: String(e) }));
   // Apps started from the Dock miss PATH entries set in the shell's rc file (npm, nvm, mise): ask the person's own shell.
   if (r.code !== 0) r = await exec("sh", ["-c", 'exec "${SHELL:-/bin/sh}" -lic "quota-axi --json" </dev/null']).catch(e => ({ code: -1, stderr: String(e) }));
   if (r.code !== 0) throw new Error(`quota-axi failed: ${(r.stderr || "").trim().split("\n").pop() || `exit ${r.code}`}`);
