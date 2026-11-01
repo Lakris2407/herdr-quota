@@ -73,3 +73,12 @@ popup with reset times, pace and options.
 - Clicking the strip opens the popup with reset times and pace; unticking "5-hour limit"
   removes the `5h` bar at once.
 - With `quota-axi` missing, the strip says "Quota unavailable" and the popup shows the error.
+
+## Windows command compatibility
+
+Before the existing Unix login-shell fallback, try the fixed command
+`cmd.exe /d /s /c "quota-axi --json"` only if the native executable cannot start.
+Forward the same execution options to both attempts, including a remote machine when
+provided. Do not interpolate caller input into the shell command or retry a CLI that
+already ran and returned a nonzero exit code. Keep the original spawn error if neither
+launcher starts. Check the helper with `node --test tests/quota-command.test.mjs`.

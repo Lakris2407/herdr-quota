@@ -113,3 +113,14 @@ On a narrow status bar it drops the graphs, then the GPU, so CPU and RAM always 
 ## License
 
 MIT
+
+## Windows
+
+Install Node.js and `quota-axi` (`npm install -g quota-axi`) and ensure the npm global
+bin directory is on the environment PATH available to Herdr. If the native executable
+cannot start, the quota mod tries the Windows npm shim through `cmd.exe /d /s /c`.
+No Git Bash or hard-coded Node installation path is required.
+
+Run `quota-axi --json` in a terminal to check your provider sign-ins. Then run
+`herdr-app check ~/.config/herdr-app/mods/quota`. The optional system-load mod
+remains macOS-only.
