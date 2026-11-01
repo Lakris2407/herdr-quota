@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> **This mod moved to [Lakris2407/herdr-mods](https://github.com/Lakris2407/herdr-mods/tree/main/quota).** This repo is archived; new versions only ship there.
+
 # Agent quota and system load for Herdr
 
 Your coding agents' usage limits in the [Herdr](https://herdr.dev) status bar: one slim bar per
