@@ -98,7 +98,7 @@ Install: copy `mods/system` to `~/.config/herdr-app/mods/system` and add a block
 
 ## Antigravity limits
 
-The provider list includes a nested **Claude/GPT limits** option for Antigravity.
+The provider list includes an **Antigravity: Claude/GPT limits** option.
 Turn it off to hide its Claude/GPT session and weekly windows in the strip and popup
 without hiding Gemini. This does not affect the standalone Claude provider.
 The choice is saved; it defaults to enabled so existing installations keep their display.

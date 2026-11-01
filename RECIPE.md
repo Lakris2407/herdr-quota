@@ -65,7 +65,7 @@ popup with reset times, pace and options.
 
 ## Antigravity window preference
 
-Under the Antigravity provider checkbox, add an indented Claude/GPT limits checkbox.
+After the provider list, add an Antigravity: Claude/GPT limits checkbox when `agy` is reported.
 Persist `agyClaudeGpt` with the existing options; missing means enabled. Hide only
 `agy` windows whose ids begin with `claude_gpt_` when false, in both the strip and
 popup details. Keep all windows cached so toggling back works immediately. Keep
