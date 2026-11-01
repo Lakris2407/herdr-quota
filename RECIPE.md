@@ -3,7 +3,8 @@
 A slim strip at the right end of the status bar that shows each coding agent's usage limits as
 small bars: Claude's 5-hour and weekly limits side by side, Codex's weekly limit, and any other
 provider `quota-axi` reports. It stays grey and green until a limit gets high. A click opens a
-popup with reset times, pace and options.
+popup with reset times, pace and options. The popup header identifies whether percentages
+are used or remaining.
 
 ![Agent quota](preview.png)
 
@@ -41,9 +42,12 @@ popup with reset times, pace and options.
 - Click or right-click the strip, or the `quota:menu` key command, opens the popup at the pointer.
   Checkbox clicks apply at once and keep the popup open; Esc or a click outside closes it.
 - Defaults: 5-hour, weekly and monthly limits on, model limits off, signed-out providers and
-  names off. Layout `props` (`hidden`, `kinds`, `signedOut`, `names`) set the start; popup
+  names off. Layout `props` (`hidden`, `kinds`, `signedOut`, `names`, `remaining`) set the start; popup
   choices are saved in shared state `quota.options` and win.
 - No agent status colors are used; it does not depend on agents running.
+- **Show remaining instead of used** toggles `remaining` in `quota.options` (default false).
+  Both views invert percentages, fills and pace ticks; the popup labels the selected mode.
+  Colors and pace warnings still use percent used. `shareOf` windows stay in used mode.
 
 ## Built from
 

@@ -75,7 +75,11 @@ starting options with `props`, for example to hide a provider:
 ```
 
 `props` takes `hidden` (provider ids), `kinds` (`{ "session": true, "weekly": true, "monthly": true, "model": false }`),
-`signedOut` and `names`.
+`signedOut`, `names` and `remaining` (default `false`).
+
+Enable **Show remaining instead of used** in the popup to switch the percentages and bar fills
+in both views. Colors and pace warnings still reflect usage, so nearly exhausted limits stay red.
+Used-share windows stay labeled as used because they are not independent allowances.
 
 Keys: bind `quota:menu` (open the popup) and `quota:refresh` (read now) in `keys.json`.
 
