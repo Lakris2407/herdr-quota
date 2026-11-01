@@ -104,6 +104,14 @@ Install: copy `mods/system` to `~/.config/herdr-app/mods/system` and add a block
 
 On a narrow status bar it drops the graphs, then the GPU, so CPU and RAM always show.
 
+## Antigravity limits
+
+The provider list includes an **Antigravity: Claude/GPT limits** option.
+Turn it off to hide its Claude/GPT session and weekly windows in the strip and popup
+without hiding Gemini. This does not affect the standalone Claude provider.
+The choice is saved; it defaults to enabled so existing installations keep their display.
+Layouts may also set `agyClaudeGpt: false` in quota props as the initial preference.
+
 ## Credits
 
 - Quota data: [quota-axi](https://github.com/kunchenguid/quota-axi) by kunchenguid (MIT).
