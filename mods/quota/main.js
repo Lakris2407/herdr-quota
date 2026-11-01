@@ -229,7 +229,7 @@ export default class Quota extends View {
       .child(heading("Limits to show in the status bar"))
       .children(KINDS.map(([kind, label]) => toggle(label, o.kinds[kind], () => setOptions({ kinds: { ...o.kinds, [kind]: !o.kinds[kind] } }), `kind-${kind}`)))
       .child(div().mx(8).my(6).h(1).bg(t.border))
-      .child(heading("Models to track"))
+      .child(heading("Providers"))
       .children(all.map(p => toggle(p.label, !o.hidden.includes(p.id),
         () => setOptions({ hidden: o.hidden.includes(p.id) ? o.hidden.filter(x => x !== p.id) : [...o.hidden, p.id] }), `prov-${p.id}`)))
       .when(all.some(p => p.id === "agy"), el => el.child(toggle("Antigravity: Claude/GPT limits", o.agyClaudeGpt !== false,

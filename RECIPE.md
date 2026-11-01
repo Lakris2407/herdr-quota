@@ -29,7 +29,7 @@ are used or remaining.
   labels on the left (`foreground` when selected, `muted` otherwise), a 16 px Lucide check
   in `accent` on the right when selected, and a hover background. Options: 5-hour limit,
   Weekly limit, Monthly limit, Model limits, then a 1 px `border` divider with 6 px vertical
-  margins and a "Models to track" heading before the provider list, Signed-out providers
+  margins and a "Providers" heading before the provider list, Signed-out providers
   and Provider names.
 
 ## How it behaves
