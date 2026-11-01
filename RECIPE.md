@@ -63,6 +63,14 @@ popup with reset times, pace and options.
 - Cursor reports three monthly limits with a past reset time; hide "resets in" when it is past.
 - The strip has a fixed width; names on or many providers cut off its left end.
 
+## Antigravity window preference
+
+Under the Antigravity provider checkbox, add an indented Claude/GPT limits checkbox.
+Persist `agyClaudeGpt` with the existing options; missing means enabled. Hide only
+`agy` windows whose ids begin with `claude_gpt_` when false, in both the strip and
+popup details. Keep all windows cached so toggling back works immediately. Keep
+provider and kind filters independent. Validate with `node --test tests/quota-windows.test.mjs`.
+
 ## Done when
 
 - `herdr-app check mods/quota` passes.

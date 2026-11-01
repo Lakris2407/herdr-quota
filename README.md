@@ -96,6 +96,14 @@ Install: copy `mods/system` to `~/.config/herdr-app/mods/system` and add a block
 { "id": "status-system", "type": "block", "content": { "mod": "system" }, "size": { "px": 330 } }
 ```
 
+## Antigravity limits
+
+The provider list includes a nested **Claude/GPT limits** option for Antigravity.
+Turn it off to hide its Claude/GPT session and weekly windows in the strip and popup
+without hiding Gemini. This does not affect the standalone Claude provider.
+The choice is saved; it defaults to enabled so existing installations keep their display.
+Layouts may also set `agyClaudeGpt: false` in quota props as the initial preference.
+
 ## Credits
 
 - Quota data: [quota-axi](https://github.com/kunchenguid/quota-axi) by kunchenguid (MIT).

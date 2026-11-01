@@ -1,5 +1,6 @@
 // Agent quota in the status bar: one slim bar per limit window, from `quota-axi --json`.
 // Click it for details and options. The same mod draws the popup (props().menu).
+import { visibleWindows } from "./quota-windows.js";
 import { View, div, svg, image } from "gpui-kit";
 import { h_flex, v_flex } from "gpui-base";
 import { exec, theme, settings, shared, setShared, props, openOverlay, knownAgents, nextCommand } from "herdr";
@@ -130,7 +131,7 @@ export default class Quota extends View {
     const data = shared("quota.data"), o = options();
     const all = data?.providers ?? [], shown = all.filter(p => !o.hidden.includes(p.id) && (signedIn(p) || o.signedOut));
     const details = shown.reduce((n, p) => n + 30 + p.windows.length * 42, 0);
-    const toggles = (KINDS.length + all.length + 2) * 28;
+    const toggles = (KINDS.length + all.length + 2 + (all.some(p => p.id === "agy") ? 1 : 0)) * 28;
     openOverlay({ mod: "quota", kind: "popup", width: 300, height: Math.min(720, 44 + details + 40 + toggles + 12), props: { menu: true, start: props() ?? {} } });
   }
 
@@ -145,7 +146,7 @@ export default class Quota extends View {
     const parts = [];
     list.forEach((p, i) => {
       if (i > 0) parts.push(div().w(1).h(12).flex_none().bg(t.border));
-      const windows = p.windows.filter(w => o.kinds[w.kind] ?? false);
+      const windows = visibleWindows(p, o).filter(w => o.kinds[w.kind] ?? false);
       parts.push(h_flex().id(`q-${p.id}`).gap(9).items_center().flex_none()
         .tooltip(windows.map(w => `${p.label} ${w.label}: ${w.percentUsed}% used${w.resetsAt && Date.parse(w.resetsAt) > now ? `, resets in ${until(w.resetsAt, now)}` : ""}`).join("\n") || `${p.label}: not signed in`)
         .child(h_flex().gap(5).items_center()
@@ -184,7 +185,7 @@ export default class Quota extends View {
         .child(this.glyph(p, 13, t))
         .child(div().font_semibold().text_color(t.foreground).child(p.label))
         .child(div().text_size(10.5).text_color(t.dim).child(signedIn(p) ? (p.plan ?? "") : "not signed in")))
-      .children(p.windows.map(w => {
+      .children(visibleWindows(p, o).map(w => {
         const pc = pace(w, now);
         return v_flex().gap(3)
           .child(h_flex().gap(8).items_center()
@@ -206,8 +207,11 @@ export default class Quota extends View {
       .child(div().mx(8).my(6).h(1).bg(t.border))
       .child(heading("Show in the status bar"))
       .children(KINDS.map(([kind, label]) => toggle(label, o.kinds[kind], () => setOptions({ kinds: { ...o.kinds, [kind]: !o.kinds[kind] } }), `kind-${kind}`)))
-      .children(all.map(p => toggle(p.label, !o.hidden.includes(p.id),
-        () => setOptions({ hidden: o.hidden.includes(p.id) ? o.hidden.filter(x => x !== p.id) : [...o.hidden, p.id] }), `prov-${p.id}`)))
+      .children(all.map(p => v_flex()
+        .child(toggle(p.label, !o.hidden.includes(p.id),
+          () => setOptions({ hidden: o.hidden.includes(p.id) ? o.hidden.filter(x => x !== p.id) : [...o.hidden, p.id] }), `prov-${p.id}`))
+        .when(p.id === "agy", el => el.child(div().pl(20).child(toggle("Claude/GPT limits", o.agyClaudeGpt !== false,
+          () => setOptions({ agyClaudeGpt: o.agyClaudeGpt === false }), "agy-claude-gpt"))))))
       .child(toggle("Signed-out providers", o.signedOut, () => setOptions({ signedOut: !o.signedOut }), "signed-out"))
       .child(toggle("Provider names", o.names, () => setOptions({ names: !o.names }), "names"));
   }
