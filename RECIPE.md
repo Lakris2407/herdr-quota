@@ -51,8 +51,10 @@ popup with reset times, pace and options.
 - `herdr` API: `exec`, `theme`, `settings().dark`, `shared` / `setShared` (`quota.data`,
   `quota.error`, `quota.options`, `quota.refresh`), `props`, `openOverlay`, `knownAgents`
   (icons), `nextCommand`; elements `svg`, `image`, `.tooltip`.
-- Program: `quota-axi --json` (schema 3: `providers[].provider/label/plan/windows[]` with
-  `kind` session, weekly, monthly or model, `percentUsed`, `resetsAt`, `windowSeconds`).
+- Program: `quota-axi --json` (`providers[].provider/label/plan/windows[]` with
+  `kind` session, weekly, monthly or model, `percentUsed` or `percentRemaining`, `resetsAt`, `windowSeconds`).
+  When `percentUsed` is absent, derive it as `100 - percentRemaining`; never derive it for a
+  `shareOf` window or treat missing percentages as zero usage.
 
 ## Watch out
 
